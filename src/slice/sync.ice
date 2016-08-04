@@ -19,12 +19,19 @@ module Electrosense {
 		long nsec;		
                 
 	};
-
+	
+	class ScanningParameters {
+		long frequency;
+		long samplingRate;
+		long chunkSize;
+		long overlapSize;
+		long duration;
+	};
 
 
 	interface Synchronization {
 
-		void start(Time reference, Time delay);
+		void start(Time reference, Time delay, ScanningParameters parameters);
 
 	};
 
