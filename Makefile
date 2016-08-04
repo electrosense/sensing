@@ -123,6 +123,32 @@ ESenseInterfaces/fast:
 	$(MAKE) -f src/slice/CMakeFiles/ESenseInterfaces.dir/build.make src/slice/CMakeFiles/ESenseInterfaces.dir/build
 .PHONY : ESenseInterfaces/fast
 
+#=============================================================================
+# Target rules for targets named ControllerIQ
+
+# Build rule for target.
+ControllerIQ: cmake_check_build_system
+	$(MAKE) -f CMakeFiles/Makefile2 ControllerIQ
+.PHONY : ControllerIQ
+
+# fast build rule for target.
+ControllerIQ/fast:
+	$(MAKE) -f src/controller/CMakeFiles/ControllerIQ.dir/build.make src/controller/CMakeFiles/ControllerIQ.dir/build
+.PHONY : ControllerIQ/fast
+
+#=============================================================================
+# Target rules for targets named SensorIQ
+
+# Build rule for target.
+SensorIQ: cmake_check_build_system
+	$(MAKE) -f CMakeFiles/Makefile2 SensorIQ
+.PHONY : SensorIQ
+
+# fast build rule for target.
+SensorIQ/fast:
+	$(MAKE) -f src/sensor/CMakeFiles/SensorIQ.dir/build.make src/sensor/CMakeFiles/SensorIQ.dir/build
+.PHONY : SensorIQ/fast
+
 # Help Target
 help:
 	@echo "The following are some of the valid targets for this Makefile:"
@@ -132,6 +158,8 @@ help:
 	@echo "... edit_cache"
 	@echo "... rebuild_cache"
 	@echo "... ESenseInterfaces"
+	@echo "... ControllerIQ"
+	@echo "... SensorIQ"
 .PHONY : help
 
 

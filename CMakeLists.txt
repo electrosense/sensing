@@ -38,6 +38,7 @@ INCLUDE_DIRECTORIES("${CURSES_INCLUDE_DIR}")
 
 SET( DEPS_DIR ${CMAKE_CURRENT_SOURCE_DIR}/Deps)
 include(${DEPS_DIR}/ice/CMakeLists.txt)
+include(${DEPS_DIR}/rtl-sdr/CMakeLists.txt)
 
 # Descend into subdirectories
 ADD_SUBDIRECTORY(src)
