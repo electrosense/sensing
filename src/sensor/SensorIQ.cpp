@@ -8,9 +8,11 @@
 
 
 
+Ice::CommunicatorPtr ic;
 
 namespace Electrosense
 {
+
 
 class SynchronizationI: virtual public Electrosense::Synchronization
 {
@@ -30,7 +32,7 @@ public:
 
 	virtual void start (const Electrosense::TimePtr &reference,
 			const Electrosense::TimePtr &delay,
-			const Electrosense::ScanningParametersPtr &parameters,
+			const Electrosense::ScanningParametersPtr	 &parameters,
 			const Ice::Current& current)
 	{
 		// Get actual time
@@ -48,7 +50,7 @@ public:
 		//finalDelay = boost::detail::timespec_minus(refTime,currentTime);
 
 
-		CustomSleep* c = new CustomSleep(reference,delay, mMutex);
+		CustomSleep* c = new CustomSleep(reference,delay,parameters,mMutex);
 		c->start();
 	}
 
@@ -60,32 +62,38 @@ private:
 	public:
 		CustomSleep(const Electrosense::TimePtr &reference,
 				const Electrosense::TimePtr &delay,
+				const Electrosense::ScanningParametersPtr &parameters,
 				IceUtil::Mutex* mutex){
 
 			mMutex = mutex;
 
 			mReference = reference;
 			mDelay = delay;
+			mParameters = parameters;
 
 			mRefTime.tv_sec = reference->sec;
 			mRefTime.tv_nsec = reference->nsec;
 
-
+			mSDR = new SDR();
 		}
 
 		~CustomSleep()
 		{
-
+			if (mSDR)
+			{
+				mSDR->stop();
+				delete(mSDR);
+			}
 		}
 
 		virtual void run()
 		{
 
 			// Initialize dongle and wait to wake up
+			mSDR->initialize(mParameters->frequency, mParameters->samplingRate, mParameters->chunkSize, mParameters->overlapSize);
 
 			// Sleep and wait
 			struct timespec currentTime;
-
 			clock_gettime(CLOCK_REALTIME, &currentTime);
 			std::cout << "CurrentTime: " << currentTime.tv_sec << "." << currentTime.tv_nsec << std::endl;
 			std::cout << "ReferenceTime: " << mReference->sec << "." << mReference->nsec << std::endl;
@@ -95,21 +103,23 @@ private:
 			clock_gettime(CLOCK_REALTIME, &currentTime);
 			std::cout << "* WakeUp: " << currentTime.tv_sec << "." << currentTime.tv_nsec << std::endl;
 
-			mMutex->unlock();
+			//mMutex->unlock();
 
 			// Start to scan
-
+			mSDR->start();
+			ic->shutdown();
 		}
 	private:
 		IceUtil::Mutex* mMutex;
 		struct timespec mRefTime;
 		Electrosense::TimePtr mReference;
 		Electrosense::TimePtr mDelay;
+		Electrosense::ScanningParametersPtr mParameters;
+		SDR* mSDR;
 	};
 };
 
 }
-
 
 
 int main( const int argc, char * const argv[])
@@ -117,7 +127,7 @@ int main( const int argc, char * const argv[])
 
 	Electrosense::SynchronizationI *syncPtr;
 
-	Ice::CommunicatorPtr ic;
+
 	IceUtil::Mutex mutex;
 
 	try {

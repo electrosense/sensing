@@ -14,18 +14,21 @@
 #include <stdlib.h>
 #include <rtl-sdr.h>
 #include <iostream>
+#include <vector>
 
 class SDR {
 public:
 	SDR();
 	virtual ~SDR();
 
-	void initialize(long frequency, long samplingRate);
+	void initialize(long frequency, long samplingRate, long chunkSize, long overlapSize);
 	void start();
 	void stop();
 
 private:
 	rtlsdr_dev_t* mDevice;
+	long mFrequency, mSamplingRate, mChunkSize, mOverlapSize;
+
 };
 
 #endif /* SRC_SENSOR_SDR_H_ */
