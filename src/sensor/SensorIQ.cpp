@@ -127,7 +127,6 @@ int main( const int argc, char * const argv[])
 
 	Electrosense::SynchronizationI *syncPtr;
 
-
 	IceUtil::Mutex mutex;
 
 	try {

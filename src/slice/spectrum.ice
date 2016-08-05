@@ -19,14 +19,16 @@ module Electrosense {
 
 		long sensorID;
 		Time timestamp;
-		Ice::ByteSeq IQsamples;
-                
+		long centerFrequency;
+		long samplingRate;
+		Ice::ByteSeq samples;
+		                
 	};		
 
 
 	interface Spectrum  {
 
-		void push (SpectrumSegment segment);
+		 void push (SpectrumSegment segment);
 
 	};
 

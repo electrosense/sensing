@@ -9,14 +9,14 @@ int main(int argc, char** argv){
 	Ice::CommunicatorPtr ic;
 
 //	const char* proxy[] = {"Sync:default -h 172.16.1.148 -p 10000",
-        const char* proxy[] =  {"Sync:default -h 172.16.18.21 -p 10000",
+        const char* proxy[] =  {"Sync:default -h 0.0.0.0 -p 10000",
 				"Sync:default -h 172.16.18.22 -p 10000",
 				"Sync:default -h 172.16.18.22 -p 10000",
 				"Sync:default -h 172.16.18.23 -p 10000",
 				"Sync:default -h 172.16.18.24 -p 10000"};
 
 	//const char* proxy[] = {"Sync:default -h 0.0.0.0 -p 10000"};
-	int n_proxies = 2;
+	int n_proxies = 1;
 	std::vector<std::string> proxyStr(proxy, proxy + n_proxies);
 
 	std::vector<Electrosense::SynchronizationPrx> syncProxies;
@@ -82,6 +82,7 @@ int main(int argc, char** argv){
 
 	}
 
+	ic->shutdown();
 
 	return 0;
 

@@ -16,7 +16,16 @@
 #include <iostream>
 #include <vector>
 
+
+#include "readerwriterqueue.h"
+
+#include "Sender.h"
+#include "SpectrumSegment.h"
+
+using namespace moodycamel;
+
 class SDR {
+
 public:
 	SDR();
 	virtual ~SDR();
@@ -28,6 +37,10 @@ public:
 private:
 	rtlsdr_dev_t* mDevice;
 	long mFrequency, mSamplingRate, mChunkSize, mOverlapSize;
+
+	Sender* mSender;
+	ReaderWriterQueue<SpectrumSegment*> *mQueue;
+
 
 };
 

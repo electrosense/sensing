@@ -54,19 +54,26 @@ void SDR::initialize(long frequency, long samplingRate, long chunkSize, long ove
 		std::cerr << "Error: unable to reset RTLSDR buffer" << std::endl;
 	}
 
-	std::cout << "Initializing dongle with following configuration: " << std::endl;
+	std::cout << "[*] Initializing dongle with following configuration: " << std::endl;
 	std::cout << "\t Center Frequency: " << frequency << " Hz" << std::endl;
 	std::cout << "\t Sampling Rate: " << samplingRate << " samples/sec" << std::endl;
+
+
+	mQueue = new ReaderWriterQueue< SpectrumSegment*> (10);
+	mSender = new Sender(mQueue);
 
 }
 
 typedef struct {
   std::vector <unsigned char> * buf;
   rtlsdr_dev_t * dev;
+  long center_frequency;
+  long sampling_rate;
   long chunk_size;
   long overlap_size;
   long* samples_read;
   struct timespec init_time;
+  ReaderWriterQueue< SpectrumSegment*>* queue;
 } callback_package_t;
 
 
@@ -82,7 +89,7 @@ static void capbuf_rtlsdr_callback(
 	callback_package_t & cp=*cp_p;
 	rtlsdr_dev_t * dev=cp.dev;
 	std::vector <unsigned char> capbuf_raw_p= *cp.buf;
-
+	ReaderWriterQueue< SpectrumSegment*> *queue = cp.queue;
 
 	if ((current_time.tv_sec - cp.init_time.tv_sec) > 2)
 	{
@@ -92,15 +99,21 @@ static void capbuf_rtlsdr_callback(
 
 	// Maximum len is 1024*256 = 262144
 
+	//TODO: Check if we can do this operation as atomic one.
+
 	for (uint32_t t=0;t<len;t++) {
 		if (capbuf_raw_p.size() < (unsigned int)cp.chunk_size) {
 			capbuf_raw_p.push_back(buf[t]);
-		}
 
+		}
 	}
 
-	std::cout << current_time.tv_sec << ": Segment of " << capbuf_raw_p.size() << " IQ samples " << std::endl;
+	SpectrumSegment* segment = new SpectrumSegment(1,current_time,cp.center_frequency, cp.sampling_rate, capbuf_raw_p);
+	queue->enqueue(segment);
+
+	//std::cout << current_time.tv_sec << ": Segment of " << capbuf_raw_p.size() << " IQ samples - Size:" << queue->size_approx() << std::endl;
 	capbuf_raw_p.clear();
+
 }
 
 void SDR::start()
@@ -111,10 +124,13 @@ void SDR::start()
 
 	callback_package_t cp;
 	cp.buf=&capbuf_raw;
+	cp.center_frequency = mFrequency;
+	cp.sampling_rate = mSamplingRate;
 	cp.chunk_size = mChunkSize;
 	cp.overlap_size = mOverlapSize;
 	cp.samples_read = &samples_read;
 	cp.dev = mDevice;
+	cp.queue = mQueue;
 
 	struct timespec init_time;
 	clock_gettime(CLOCK_REALTIME, &init_time);
@@ -123,6 +139,9 @@ void SDR::start()
 	rtlsdr_read_async(mDevice,capbuf_rtlsdr_callback,(void *)&cp,0,0);
 
 	stop();
+
+
+
 }
 
 void SDR::stop()
