@@ -42,10 +42,12 @@ void Sender::run ()
 {
 	std::cout << "Sender::run thread" << std::endl;
 
+
 	while(1)
 	{
-		usleep(5);
+		usleep(2);
 		SpectrumSegment* segment = new SpectrumSegment();
+
 		if (mQueue->try_dequeue(segment)) {
 			std::cout << "	- Received: " << segment->getSensorId() << " - Time: " << segment->getTimeStamp().tv_sec
 					<< "." << segment->getTimeStamp().tv_nsec << std::endl;
@@ -59,7 +61,30 @@ void Sender::run ()
 			eSegment->timestamp = time;
 			eSegment->centerFrequency = segment->getCenterFrequency();
 			eSegment->samplingRate = segment->getSamplingRate();
-			eSegment->samples = segment->getSamples();
+
+			//compress the samples
+			unsigned long source_len = segment->getSamples().size();
+			unsigned long compress_len = compressBound(source_len);
+			unsigned char* compress_buf = (unsigned char *) malloc(compress_len);
+
+
+
+			int r = compress((Bytef *) compress_buf, (uLongf *) &compress_len, (const Bytef *) (segment->getSamples().data()), (uLong)source_len );
+
+			if(r != Z_OK) {
+				std::cerr << "error while compressing" << std::endl;
+			}
+
+
+			//std::cout << "Size before: " << eSegment->samples.size() << std::endl;
+
+			eSegment->samples.assign(compress_buf, compress_buf+compress_len);
+
+			//std::cout << "Size after: " << eSegment->samples.size() << std::endl;
+
+			//std::cout << "Compressing from: " << source_len << " to " << compress_len << std::endl;
+
+			eSegment->samplesSize = source_len;
 
 			mSpectrumManager->push(eSegment);
 

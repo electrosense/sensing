@@ -9,9 +9,10 @@
 #define SRC_SENSOR_SENDER_H_
 
 #include <boost/thread.hpp>
-#include <boost/lockfree/queue.hpp>
 #include "readerwriterqueue.h"
 #include "SpectrumSegment.h"
+
+#include <zlib.h>
 
 #include <Ice/Ice.h>
 #include <IceUtil/IceUtil.h>

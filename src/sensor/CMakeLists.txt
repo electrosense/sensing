@@ -10,6 +10,7 @@ TARGET_LINK_LIBRARIES(SensorIQ
 	${ZeroCIce_LIBRARIES}
 	${LIBRTLSDR_LIBRARIES}
     ${Boost_LIBRARIES}
+    ${ZLIB_LIBRARIES}
 	pthread
 	rt
 	dl

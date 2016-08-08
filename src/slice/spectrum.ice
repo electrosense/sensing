@@ -21,6 +21,7 @@ module Electrosense {
 		Time timestamp;
 		long centerFrequency;
 		long samplingRate;
+		long samplesSize;
 		Ice::ByteSeq samples;
 		                
 	};		

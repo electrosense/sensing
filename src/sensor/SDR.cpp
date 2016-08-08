@@ -46,7 +46,12 @@ void SDR::initialize(long frequency, long samplingRate, long chunkSize, long ove
 
 	// Sampling frequency
 	if (rtlsdr_set_sample_rate(mDevice,samplingRate)<0) {
-		std::cerr << "Error: unable to set sampling rate" << std::endl;
+		std::cerr << "Error: unable to set sampling rate to " << samplingRate << std::endl;
+	}
+
+	if (rtlsdr_set_center_freq(mDevice,frequency)<0)
+	{
+		std::cerr << "Error: unable to set frequency to" << frequency << std::endl;
 	}
 
 	// Reset the buffer
@@ -102,7 +107,7 @@ static void capbuf_rtlsdr_callback(
 	//TODO: Check if we can do this operation as atomic one.
 
 	for (uint32_t t=0;t<len;t++) {
-		if (capbuf_raw_p.size() < (unsigned int)cp.chunk_size) {
+		if (capbuf_raw_p.size() < (unsigned int)cp.chunk_size*2) {
 			capbuf_raw_p.push_back(buf[t]);
 
 		}

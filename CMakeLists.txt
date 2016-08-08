@@ -2,6 +2,7 @@ CMAKE_MINIMUM_REQUIRED( VERSION 2.8.4 )
 # allow more human readable "if then else" constructs
 #SET( CMAKE_ALLOW_LOOSE_LOOP_CONSTRUCTS TRUE )
 
+SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -std=gnu++11")
 
 # Add the local Find*.cmake scripts
 LIST (APPEND CMAKE_MODULE_PATH ${CMAKE_SOURCE_DIR}/cmake/Modules)
@@ -38,6 +39,8 @@ SET( DEPS_DIR ${CMAKE_CURRENT_SOURCE_DIR}/Deps)
 include(${DEPS_DIR}/ice/CMakeLists.txt)
 include(${DEPS_DIR}/rtl-sdr/CMakeLists.txt)
 include(${DEPS_DIR}/boost/CMakeLists.txt)
+include(${DEPS_DIR}/zlib/CMakeLists.txt)
+
 # Descend into subdirectories
 ADD_SUBDIRECTORY(src)
 
