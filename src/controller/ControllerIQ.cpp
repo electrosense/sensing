@@ -3,6 +3,8 @@
 #include <Ice/Ice.h>
 #include <IceUtil/IceUtil.h>
 #include <boost/program_options.hpp>
+#include <stdio.h>
+#include <stdlib.h>
 
 using namespace boost;
 using namespace std;
@@ -123,11 +125,11 @@ int main(int argc, char** argv){
 
 		// Scanning Parameters
 		Electrosense::ScanningParametersPtr config = new Electrosense::ScanningParameters();
-		config->frequency = 806e6;
-		config->samplingRate = 1.92e6;
-		config->chunkSize = 10000;
-		config->overlapSize = 0;
-		config->duration = 0;
+		config->frequency = frequency;
+		config->samplingRate = sampling_rate;
+		config->chunkSize = chunk_size;
+		config->overlapSize = overlap_size;
+		config->duration = duration;
 
 		for (int i=0; i<n_proxies; i++)
 		{

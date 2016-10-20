@@ -69,6 +69,7 @@ void Saver::run ()
 				fc_v(0)=segment->centerFrequency;
 				itf << Name("fc") << fc_v;
 				itf.close();
+				capbuf.clear();
 			}
 
 		}

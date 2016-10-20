@@ -8,6 +8,7 @@ INCLUDE_DIRECTORIES(
   ${CMAKE_CURRENT_SOURCE_DIR} 
   ../ESenseInterfaces/
   /usr/share/Ice-3.5.1/slice/
+  /usr/share/Ice-3.6.2/slice/
   )
 
 FOREACH(currentSourceFile ${ICE_FILES})
@@ -24,7 +25,7 @@ FOREACH(currentSourceFile ${ICE_FILES})
         #MESSAGE (STATUS "SOURCE: ${SOURCE_FILES_2}")
         add_custom_command(
         		  OUTPUT ${SOURCE_FILES_2}
-                  COMMAND slice2cpp -I${CMAKE_CURRENT_SOURCE_DIR}/.. -I/usr/share/Ice-3.5.1/slice/ ${CMAKE_CURRENT_SOURCE_DIR}/${new_source} --output-dir ../ESenseInterfaces/
+                  COMMAND slice2cpp -I${CMAKE_CURRENT_SOURCE_DIR}/.. -I/usr/share/Ice-3.6.2/slice/ -I/usr/share/Ice-3.5.1/slice/ ${CMAKE_CURRENT_SOURCE_DIR}/${new_source} --output-dir ../ESenseInterfaces/
         )        
                                
         LIST(REMOVE_AT SOURCE_FILES_2 0)
