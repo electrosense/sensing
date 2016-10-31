@@ -24,15 +24,25 @@ namespace Electrosense {
 
 class Saver {
 public:
-	Saver(ReaderWriterQueue<Electrosense::SpectrumSegmentPtr> *queue);
+	Saver(ReaderWriterQueue<Electrosense::SpectrumSegmentPtr> *queue, bool uniqueFile);
 	virtual ~Saver();
+
+	void finish();
 
 private:
 
 	void run ();
+	void stop();
 
 	ReaderWriterQueue<Electrosense::SpectrumSegmentPtr> *mQueue;
 	boost::thread *mThread;
+
+	std::stringstream mFileName;
+	it_file mItFile;
+	bool mUniqueFile;
+	bool mStop;
+	ivec m_fc_v;
+	cvec mFinalBuffer;
 };
 
 } /* namespace Electrosense */

@@ -9,17 +9,33 @@
 
 namespace Electrosense {
 
-Saver::Saver(ReaderWriterQueue<Electrosense::SpectrumSegmentPtr> *queue) {
+Saver::Saver(ReaderWriterQueue<Electrosense::SpectrumSegmentPtr> *queue, bool uniqueFile) {
 
 	mQueue=queue;
+	mUniqueFile = uniqueFile;
+	mFileName.str("");
+	mStop = false;
+	m_fc_v.set_size(1);
+
 	mThread = new boost::thread(&Saver::run, this);
+
 }
 
+void Saver::stop()
+{
+	mStop = true;
+}
 void Saver::run ()
 {
 	std::cout << "Saver::run thread" << std::endl;
 	while(1)
 	{
+		if (mStop)
+		{
+			std::cout << "Exit the thread" << std::endl;
+			break;
+		}
+
 		usleep(2);
 		Electrosense::SpectrumSegmentPtr segment;
 
@@ -44,42 +60,72 @@ void Saver::run ()
 
 
 				//Normalize
-				/*
-				cvec capbuf;
-				capbuf.set_size(samples.size());
-				for (unsigned int t=0;t<samples.size();t++) {
-					capbuf(index)=std::complex<double>((((double)samples[(t<<1)])-127.0)/128.0,(((double)samples[(t<<1)+1])-127.0)/128.0);
-
-				}
-				*/
 				cvec capbuf;
 				capbuf.set_size(samples.size()/2);
 				for (unsigned int t=0;t<samples.size();t=t+2) {
 					capbuf(t/2)=std::complex<double>((((double)samples[t])-127.0)/128.0,(((double)samples[(t+1)])-127.0)/128.0);
+					//if (t==20)
+					//	std::cout << capbuf(t/2) << std::endl;
 				}
 
-				std::stringstream filename;
-				filename.str("");
-				filename << "/tmp" << "/capbuf_" << segment->sensorID << "_" << segment->timestamp->sec << "." << segment->timestamp->nsec << ".it";
+				if (mUniqueFile)
+				{
+					if (mFileName.str().empty())
+					{
+						mFileName << "/tmp" << "/capbuf_" << segment->sensorID << "_" << segment->timestamp->sec << "." << segment->timestamp->nsec << ".it";
+						// Save file
+						mItFile.open(mFileName.str(),true);
+						mFinalBuffer = concat(mFinalBuffer, capbuf);
 
-				// Save file
-				it_file itf(filename.str(),true);
-				itf << Name("capbuf") << capbuf;
-				ivec fc_v(1);
-				fc_v(0)=segment->centerFrequency;
-				itf << Name("fc") << fc_v;
-				itf.close();
-				capbuf.clear();
+					}
+					else
+					{
+						// We save data in memory until the end.
+						m_fc_v(0)=segment->centerFrequency;
+						mFinalBuffer = concat(mFinalBuffer, capbuf);
+						capbuf.clear();
+					}
+				}
+				else
+				{
+					mFileName.str("");
+					mFileName << "/tmp" << "/capbuf_" << segment->sensorID << "_" << segment->timestamp->sec << "." << segment->timestamp->nsec << ".it";
+					// Save file
+					mItFile.open(mFileName.str(),true);
+					mItFile << Name("capbuf") << capbuf;
+					ivec fc_v(1);
+					fc_v(0)=segment->centerFrequency;
+					mItFile << Name("fc") << fc_v;
+					mItFile.flush();
+
+					mItFile.close();
+					capbuf.clear();
+				}
 			}
 
 		}
 	}
 
 }
+
+void Saver::finish()
+{
+	if (mUniqueFile)
+	{
+		mItFile << Name("capbuf") << mFinalBuffer;
+		mItFile << Name("fc") << m_fc_v;
+		mItFile.close();
+	}
+}
+
 Saver::~Saver() {
 
 	if (mThread)
+	{
+		stop();
+		mThread->join();
 		delete(mThread);
+	}
 }
 
 } /* namespace Electrosense */
