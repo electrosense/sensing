@@ -19,6 +19,7 @@ public:
 			struct timespec timeStamp,
 			long centerFrequency,
 			long samplingRate,
+			long downSampling,
 			std::vector<unsigned char> samples);
 
 	virtual ~SpectrumSegment();
@@ -27,6 +28,7 @@ public:
 	timespec getTimeStamp() { return mTimestamp;};
 	long getCenterFrequency() { return mCenterFrequency; };
 	long getSamplingRate() {return mSamplingRate; };
+	long getDownSampling() {return mDownSampling; };
 	std::vector<unsigned char> getSamples() { return  mSamples; };
 
 private:
@@ -35,6 +37,7 @@ private:
 	struct timespec mTimestamp;
 	long mCenterFrequency;
 	long mSamplingRate;
+	long mDownSampling;
 	std::vector<unsigned char> mSamples;
 };
 

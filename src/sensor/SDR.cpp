@@ -11,12 +11,14 @@ SDR::SDR() {
 
 }
 
-void SDR::initialize(long frequency, long samplingRate, long chunkSize, long overlapSize)
+void SDR::initialize(long frequency, long samplingRate, long chunkSize, long overlapSize, long duration, long downSampling)
 {
 	mFrequency = frequency;
 	mSamplingRate = samplingRate;
 	mChunkSize = chunkSize;
 	mOverlapSize = overlapSize;
+	mDuration = duration;
+	mDownSampling = downSampling;
 
 	int device_index=0;
 	int n_rtlsdr=rtlsdr_get_device_count();
@@ -65,7 +67,7 @@ void SDR::initialize(long frequency, long samplingRate, long chunkSize, long ove
 
 
 	mQueue = new ReaderWriterQueue< SpectrumSegment*> (10);
-	mSender = new Sender(mQueue);
+	mSender = new Sender(mQueue, mIp, mPort);
 
 }
 
@@ -74,8 +76,10 @@ typedef struct {
   rtlsdr_dev_t * dev;
   long center_frequency;
   long sampling_rate;
+  long down_sampling;
   long chunk_size;
   long overlap_size;
+  long duration;
   long* samples_read;
   struct timespec init_time;
   ReaderWriterQueue< SpectrumSegment*>* queue;
@@ -96,7 +100,7 @@ static void capbuf_rtlsdr_callback(
 	std::vector <unsigned char> capbuf_raw_p= *cp.buf;
 	ReaderWriterQueue< SpectrumSegment*> *queue = cp.queue;
 
-	if ((current_time.tv_sec - cp.init_time.tv_sec) > 2)
+	if ((current_time.tv_sec - cp.init_time.tv_sec) > cp.duration)
 	{
 		rtlsdr_cancel_async(dev);
 		return;
@@ -106,14 +110,31 @@ static void capbuf_rtlsdr_callback(
 
 	//TODO: Check if we can do this operation as atomic one.
 
+	unsigned int factor;
+
+	if (cp.down_sampling != -1)
+		factor = ((cp.sampling_rate / cp.down_sampling) + 1) * 2;
+
+	unsigned int counter = 0;
+	unsigned int mycounter = 0;
+
 	for (uint32_t t=0;t<len;t++) {
+
+		counter=counter+1;
+		if ( (cp.down_sampling != -1) && (counter < factor))
+		{
+			continue;
+		}
+
 		if (capbuf_raw_p.size() < (unsigned int)cp.chunk_size*2) {
 			capbuf_raw_p.push_back(buf[t]);
-
+			counter = 0;
+			mycounter=mycounter+1;
 		}
 	}
 
-	SpectrumSegment* segment = new SpectrumSegment(1,current_time,cp.center_frequency, cp.sampling_rate, capbuf_raw_p);
+	std::cout << "Samples saved: " << mycounter << std::endl;
+	SpectrumSegment* segment = new SpectrumSegment(1,current_time,cp.center_frequency, cp.sampling_rate, cp.down_sampling, capbuf_raw_p);
 	queue->enqueue(segment);
 
 	//std::cout << current_time.tv_sec << ": Segment of " << capbuf_raw_p.size() << " IQ samples - Size:" << queue->size_approx() << std::endl;
@@ -124,15 +145,29 @@ static void capbuf_rtlsdr_callback(
 void SDR::start()
 {
 	std::vector <unsigned char> capbuf_raw;
-	capbuf_raw.reserve(256*1024);
+	if (mDownSampling == -1)
+	{
+		std::cout << "Reserving 262144 values for the buffer" << std::endl;
+		capbuf_raw.reserve(256*1024);
+	}
+	else
+	{
+		unsigned int factor = ((mSamplingRate / mDownSampling) + 1) * 2;
+		capbuf_raw.reserve((256*1024)/factor);
+
+		std::cout << "Reserving " << (256*1024)/factor << " values for the buffer" << std::endl;
+	}
+
 	long samples_read = 0;
 
 	callback_package_t cp;
 	cp.buf=&capbuf_raw;
 	cp.center_frequency = mFrequency;
 	cp.sampling_rate = mSamplingRate;
+	cp.down_sampling = mDownSampling;
 	cp.chunk_size = mChunkSize;
 	cp.overlap_size = mOverlapSize;
+	cp.duration = mDuration;
 	cp.samples_read = &samples_read;
 	cp.dev = mDevice;
 	cp.queue = mQueue;

@@ -24,7 +24,7 @@ using namespace moodycamel;
 
 class Sender {
 public:
-	Sender(ReaderWriterQueue< SpectrumSegment*>*queue);
+	Sender(ReaderWriterQueue< SpectrumSegment*>*queue,  std::string IP,  std::string port);
 	virtual ~Sender();
 
 	void wait();

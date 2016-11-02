@@ -8,7 +8,7 @@
 #include "Sender.h"
 
 
-Sender::Sender (ReaderWriterQueue< SpectrumSegment*>*queue)
+Sender::Sender (ReaderWriterQueue< SpectrumSegment*>*queue, std::string IP, std::string port)
 {
 	std::cout << "[*] Initializing sender" << std::endl;
 
@@ -20,7 +20,7 @@ Sender::Sender (ReaderWriterQueue< SpectrumSegment*>*queue)
 
 	ic = Ice::initialize(id);
 
-	Ice::ObjectPrx base = ic->stringToProxy("Spectrum:default -h 0.0.0.0 -p 10001");
+	Ice::ObjectPrx base = ic->stringToProxy("Spectrum:default -h " + IP + " -p " + port);
 	if (0==base)
 	{
 		throw "Invalid base";
@@ -50,7 +50,7 @@ void Sender::run ()
 
 		if (mQueue->try_dequeue(segment)) {
 			std::cout << "	- Received: " << segment->getSensorId() << " - Time: " << segment->getTimeStamp().tv_sec
-					<< "." << segment->getTimeStamp().tv_nsec << std::endl;
+					<< "." << segment->getTimeStamp().tv_nsec << " Size: " << segment->getSamples().size() << std::endl;
 
 			// Send
 			Electrosense::SpectrumSegmentPtr eSegment = new Electrosense::SpectrumSegment();

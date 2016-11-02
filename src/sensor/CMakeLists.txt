@@ -2,6 +2,7 @@ SET ( CPU_SOURCE_FILES SensorIQ.cpp SDR.h SDR.cpp Sender.cpp Sender.h SpectrumSe
 
 
 add_executable (SensorIQ ${CPU_SOURCE_FILES})
+SET_TARGET_PROPERTIES(SensorIQ PROPERTIES COMPILE_FLAGS "-std=gnu++11")
 
 INCLUDE_DIRECTORIES (../ESenseInterfaces/)
 

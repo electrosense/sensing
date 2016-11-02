@@ -12,6 +12,7 @@ SpectrumSegment::SpectrumSegment(long sensorId,
 			struct timespec timeStamp,
 			long centerFrequency,
 			long samplingRate,
+			long downSampling,
 			std::vector<unsigned char> samples)
 {
 
@@ -20,6 +21,7 @@ SpectrumSegment::SpectrumSegment(long sensorId,
 	mCenterFrequency = centerFrequency;
 	mSamplingRate = samplingRate;
 	mSamples = samples;
+	mDownSampling = downSampling;
 }
 
 SpectrumSegment::~SpectrumSegment() {
