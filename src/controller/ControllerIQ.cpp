@@ -43,6 +43,7 @@ int main(int argc, char** argv){
 	int overlap_size;
 	int duration;
 	int delay;
+	int low_pass;
 	std::vector<std::string> sensorList;
 
 	po::options_description desc("Allowed options");
@@ -53,6 +54,8 @@ int main(int argc, char** argv){
 								"frequency(Hz) to center the scanning")
 						("sampling_rate,s", po::value<int>(&opt)->required(),
 								"samping rate (Hz) to scan")
+						("low_pass,p", po::value<int>(&low_pass)->default_value(-1),
+											"low pass filter in (Hz) to reduce the bandwidth")
 						("chunk_size,c", po::value<int>(&chunk_size)->default_value(262144),
 								"Size of chunk to scan (IQ samples)")
 						("overlap_size,o", po::value<int>(&overlap_size)->default_value(0),
@@ -91,6 +94,9 @@ int main(int argc, char** argv){
 	int frequency = vm["center_frequency"].as<int>();
 	int sampling_rate = vm["sampling_rate"].as<int>();
 
+	if (vm.count("low_pass"))
+		low_pass = vm["low_pass"].as<int>();
+
 	if (vm.count("chunk_size"))
 		chunk_size = vm["chunk_size"].as<int>();
 
@@ -107,6 +113,7 @@ int main(int argc, char** argv){
 	std::cout << std::endl;
 	std::cout << "\t - Frequency: " << frequency << std::endl;
 	std::cout << "\t - SamplingRate: " << sampling_rate << std::endl;
+	std::cout << "\t - LowPass: " << low_pass << std::endl;
 	std::cout << "\t - ChunkSize: " << chunk_size << std::endl;
 	std::cout << "\t - OverlapSize: " << overlap_size << std::endl;
 	std::cout << "\t - Delay: " << delay << std::endl;
@@ -179,9 +186,11 @@ int main(int argc, char** argv){
 		config->chunkSize = chunk_size;
 		config->overlapSize = overlap_size;
 		config->duration = duration;
+		config->downSample = low_pass;
 
 		for (unsigned int i=0; i<proxies.size(); i++)
 		{
+			std::cout << "config->downSample: " << config->downSample << std::endl;
 			absTime->sec = currentTime.tv_sec + delay;
 			std::cout << "[" << i << "] Sending RefTime: " << absTime->sec << "." << absTime->nsec << std::endl;
 			syncProxies.at(i)->start(absTime, delayTime, config);
