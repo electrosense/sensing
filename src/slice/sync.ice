@@ -21,11 +21,12 @@ module Electrosense {
 	};
 	
 	class ScanningParameters {
-		long frequency;
-		long samplingRate;
-		long chunkSize;
-		long overlapSize;
-		long duration;
+		long frequency;			// Hz
+		long samplingRate;		// Hz
+		long downSample;		// Hz
+		long chunkSize;			// IQ samples
+		long overlapSize;		// IQ samples
+		long duration;			// seconds
 	};
 
 
