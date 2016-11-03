@@ -21,13 +21,14 @@ class SynchronizationI: virtual public Electrosense::Synchronization
 {
 public:
 
-	SynchronizationI(IceUtil::Mutex* mutex, std::string IP, std::string port)
+	SynchronizationI(IceUtil::Mutex* mutex, std::string IP, std::string port, int sensorId)
 {
 		std::cout << "Synchronization Interface listening ... " << std::endl;
 		mMutex = mutex;
 		mMutex->lock();
 		mIp = IP;
 		mPort = port;
+		mSensorId=sensorId;
 }
 
 	void getMutex()
@@ -55,7 +56,7 @@ public:
 		//finalDelay = boost::detail::timespec_minus(refTime,currentTime);
 
 
-		CustomSleep* c = new CustomSleep(reference,delay,parameters,mMutex,mIp,mPort);
+		CustomSleep* c = new CustomSleep(reference,delay,parameters,mMutex,mIp,mPort,mSensorId);
 		c->start();
 	}
 
@@ -63,7 +64,7 @@ private:
 
 	IceUtil::Mutex* mMutex;
 	std::string mIp, mPort;
-
+	int mSensorId;
 	class CustomSleep: public IceUtil::Thread{
 
 	public:
@@ -71,7 +72,7 @@ private:
 				const Electrosense::TimePtr &delay,
 				const Electrosense::ScanningParametersPtr &parameters,
 				IceUtil::Mutex* mutex,
-				std::string IP, std::string port){
+				std::string IP, std::string port, int sensorId){
 
 			mMutex = mutex;
 
@@ -86,6 +87,7 @@ private:
 			mPort = port;
 			mSDR = new SDR();
 			mSDR->setSender(IP,port);
+			mSDR->setSensorId(sensorId);
 		}
 
 		~CustomSleep()
@@ -119,7 +121,7 @@ private:
 
 			// Start to scan
 			mSDR->start();
-			ic->shutdown();
+			//ic->shutdown();
 		}
 	private:
 		std::string mIp;
@@ -140,7 +142,7 @@ int main( const int argc, char * const argv[])
 {
 
 	std::string collector, end_point;
-
+	int sensorId;
 	po::options_description desc("Allowed options");
 	desc.add_options()
 						("help", "produce help message")
@@ -150,6 +152,8 @@ int main( const int argc, char * const argv[])
 								"IP and port to attach this app (IP:port)")
 						("collector,c", po::value<std::string>(&collector)->required(),
 								"IP and port of the collector (IP:port)")
+						("id,i", po::value<int>(&sensorId)->required(),
+								"Sensor id to identify the sensor in the collector.")
 						;
 
 	if (argc == 2) {
@@ -190,6 +194,7 @@ int main( const int argc, char * const argv[])
 		exit(-1);
 	}
 
+
 	Electrosense::SynchronizationI *syncPtr;
 
 	IceUtil::Mutex mutex;
@@ -200,7 +205,7 @@ int main( const int argc, char * const argv[])
 		ic = Ice::initialize(i, c);
 		Ice::ObjectAdapterPtr adapter =
 				ic->createObjectAdapterWithEndpoints("SyncAdapter", "default -h " + endpoint_address[0] + " -p " + endpoint_address[1]);
-		syncPtr = new Electrosense::SynchronizationI(&mutex, collector_address[0], collector_address[1]);
+		syncPtr = new Electrosense::SynchronizationI(&mutex, collector_address[0], collector_address[1], sensorId);
 		adapter->add(syncPtr, ic->stringToIdentity("Sync"));
 		adapter->activate();
 

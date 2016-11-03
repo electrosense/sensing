@@ -30,6 +30,7 @@ public:
 	SDR();
 	virtual ~SDR();
 	void setSender ( std::string IP,  std::string port) {mIp = IP; mPort = port;};
+	void setSensorId (int sensorId) {mSensorId = sensorId;};
 
 	void initialize(long frequency, long samplingRate, long chunkSize, long overlapSize, long duration, long downSampling);
 	void start();
@@ -41,6 +42,7 @@ private:
 
 	std::string mIp, mPort;
 	Sender* mSender;
+	int mSensorId;
 	ReaderWriterQueue<SpectrumSegment*> *mQueue;
 
 

@@ -82,6 +82,7 @@ typedef struct {
   long duration;
   long* samples_read;
   struct timespec init_time;
+  int sensor_id;
   ReaderWriterQueue< SpectrumSegment*>* queue;
 } callback_package_t;
 
@@ -110,7 +111,7 @@ static void capbuf_rtlsdr_callback(
 
 	//TODO: Check if we can do this operation as atomic one.
 
-	unsigned int factor;
+	unsigned int factor = 0;
 
 	if (cp.down_sampling != -1)
 		factor = ((cp.sampling_rate / cp.down_sampling) + 1) * 2;
@@ -134,7 +135,7 @@ static void capbuf_rtlsdr_callback(
 	}
 
 	std::cout << "Samples saved: " << mycounter << std::endl;
-	SpectrumSegment* segment = new SpectrumSegment(1,current_time,cp.center_frequency, cp.sampling_rate, cp.down_sampling, capbuf_raw_p);
+	SpectrumSegment* segment = new SpectrumSegment(cp.sensor_id,current_time,cp.center_frequency, cp.sampling_rate, cp.down_sampling, capbuf_raw_p);
 	queue->enqueue(segment);
 
 	//std::cout << current_time.tv_sec << ": Segment of " << capbuf_raw_p.size() << " IQ samples - Size:" << queue->size_approx() << std::endl;
@@ -171,6 +172,7 @@ void SDR::start()
 	cp.samples_read = &samples_read;
 	cp.dev = mDevice;
 	cp.queue = mQueue;
+	cp.sensor_id = mSensorId;
 
 	struct timespec init_time;
 	clock_gettime(CLOCK_REALTIME, &init_time);
@@ -178,6 +180,7 @@ void SDR::start()
 
 	rtlsdr_read_async(mDevice,capbuf_rtlsdr_callback,(void *)&cp,0,0);
 
+	mSender->wait();
 	stop();
 
 
