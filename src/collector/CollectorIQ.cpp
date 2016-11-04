@@ -122,13 +122,11 @@ int main(int argc, char** argv)
 	sigaction(SIGINT, &sigIntHandler, NULL);
 
 
-
-
 	try {
 		int i = 0;
 		char **c = NULL;
 		ic = Ice::initialize(i, c);
-		adapter = ic->createObjectAdapterWithEndpoints("Spectrum", "default -h 0.0.0.0 -p 10001");
+		adapter = ic->createObjectAdapterWithEndpoints("Spectrum", "default -h 0.0.0.0 -p " + std::to_string(port));
 		spectrumPtr = new Electrosense::SpectrumI(single_file);
 		adapter->add(spectrumPtr, ic->stringToIdentity("Spectrum"));
 		adapter->activate();
