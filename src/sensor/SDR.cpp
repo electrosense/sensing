@@ -67,7 +67,7 @@ void SDR::initialize(long frequency, long samplingRate, long chunkSize, long ove
 
 
 	mQueue = new ReaderWriterQueue< SpectrumSegment*> (10);
-	mSender = new Sender(mQueue, mIp, mPort);
+
 
 }
 
@@ -83,6 +83,7 @@ typedef struct {
   long* samples_read;
   struct timespec init_time;
   int sensor_id;
+  int control_flow;
   ReaderWriterQueue< SpectrumSegment*>* queue;
 } callback_package_t;
 
@@ -95,11 +96,17 @@ static void capbuf_rtlsdr_callback(
 	struct timespec current_time;
 	clock_gettime(CLOCK_REALTIME, &current_time);
 
-	callback_package_t * cp_p=(callback_package_t *)ctx;
+		callback_package_t * cp_p=(callback_package_t *)ctx;
 	callback_package_t & cp=*cp_p;
 	rtlsdr_dev_t * dev=cp.dev;
 	std::vector <unsigned char> capbuf_raw_p= *cp.buf;
 	ReaderWriterQueue< SpectrumSegment*> *queue = cp.queue;
+
+	if (cp.control_flow == 8)
+	{
+		cp.control_flow = 0;
+		return;
+	}
 
 	if ((current_time.tv_sec - cp.init_time.tv_sec) > cp.duration)
 	{
@@ -141,6 +148,8 @@ static void capbuf_rtlsdr_callback(
 	//std::cout << current_time.tv_sec << ": Segment of " << capbuf_raw_p.size() << " IQ samples - Size:" << queue->size_approx() << std::endl;
 	capbuf_raw_p.clear();
 
+	cp.control_flow = cp.control_flow+1;
+
 }
 
 void SDR::start()
@@ -173,13 +182,14 @@ void SDR::start()
 	cp.dev = mDevice;
 	cp.queue = mQueue;
 	cp.sensor_id = mSensorId;
-
+	cp.control_flow = 0;
 	struct timespec init_time;
 	clock_gettime(CLOCK_REALTIME, &init_time);
 	cp.init_time = init_time;
 
 	rtlsdr_read_async(mDevice,capbuf_rtlsdr_callback,(void *)&cp,0,0);
 
+	mSender = new Sender(mQueue, mIp, mPort);
 	mSender->wait();
 	stop();
 
