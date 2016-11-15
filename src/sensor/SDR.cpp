@@ -56,6 +56,29 @@ void SDR::initialize(long frequency, long samplingRate, long chunkSize, long ove
 		std::cerr << "Error: unable to set frequency to" << frequency << std::endl;
 	}
 
+    int* gains;
+    int count = rtlsdr_get_tuner_gains(mDevice, NULL);
+    if (count > 0 ) {
+            gains = (int*) malloc(sizeof(int) * count);
+            count = rtlsdr_get_tuner_gains(mDevice, gains);
+            std::cout << "Gain available: ";
+            for (int i=0; i<count; i++)
+                    std::cout  << gains[i] << " , ";
+
+            std::cout << std::endl;
+            free(gains);
+    }
+
+
+	int r = rtlsdr_set_tuner_gain_mode(mDevice, 1);
+	if(r < 0) {
+		std::cerr << "WARNING: Failed to enable manual gain mode" << std::endl;
+	}
+	r = rtlsdr_set_tuner_gain(mDevice, 10*10);
+	if(r < 0) {
+		std::cerr << "WARNING: Failed to set manual tuner gain" << std::endl;
+	}
+
 	// Reset the buffer
 	if (rtlsdr_reset_buffer(mDevice)<0) {
 		std::cerr << "Error: unable to reset RTLSDR buffer" << std::endl;
@@ -141,7 +164,7 @@ static void capbuf_rtlsdr_callback(
 		}
 	}
 
-	std::cout << "Samples saved: " << mycounter << std::endl;
+	//std::cout << "Samples saved: " << mycounter << std::endl;
 	SpectrumSegment* segment = new SpectrumSegment(cp.sensor_id,current_time,cp.center_frequency, cp.sampling_rate, cp.down_sampling, capbuf_raw_p);
 	queue->enqueue(segment);
 
