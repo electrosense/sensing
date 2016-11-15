@@ -103,7 +103,7 @@ private:
 		{
 
 			// Initialize dongle and wait to wake up
-			mSDR->initialize(mParameters->frequency, mParameters->samplingRate,
+			mSDR->initialize(mParameters->frequency, mParameters->samplingRate, mParameters->gain,
 					mParameters->chunkSize, mParameters->overlapSize, mParameters->duration, mParameters->downSample);
 
 			// Sleep and wait

@@ -32,14 +32,14 @@ public:
 	void setSender ( std::string IP,  std::string port) {mIp = IP; mPort = port;};
 	void setSensorId (int sensorId) {mSensorId = sensorId;};
 
-	void initialize(long frequency, long samplingRate, long chunkSize, long overlapSize, long duration, long downSampling);
+	void initialize(long frequency, long samplingRate, int gain, long chunkSize, long overlapSize, long duration, long downSampling);
 	void start();
 	void stop();
 
 private:
 	rtlsdr_dev_t* mDevice;
 	long mFrequency, mSamplingRate, mChunkSize, mOverlapSize, mDuration, mDownSampling;
-
+	int mGain;
 	std::string mIp, mPort;
 	Sender* mSender;
 	int mSensorId;

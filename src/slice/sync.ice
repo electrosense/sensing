@@ -24,6 +24,7 @@ module Electrosense {
 		long frequency;			// Hz
 		long samplingRate;		// Hz
 		long downSample;		// Hz
+		int  gain;				// Tenths of dB (0,9,125,207,328,402,496)
 		long chunkSize;			// IQ samples
 		long overlapSize;		// IQ samples
 		long duration;			// seconds

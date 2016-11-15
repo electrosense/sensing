@@ -44,6 +44,7 @@ int main(int argc, char** argv){
 	int duration;
 	int delay;
 	int low_pass;
+	int gain;
 	std::vector<std::string> sensorList;
 
 	po::options_description desc("Allowed options");
@@ -54,6 +55,8 @@ int main(int argc, char** argv){
 								"frequency(Hz) to center the scanning")
 						("sampling_rate,s", po::value<int>(&opt)->required(),
 								"samping rate (Hz) to scan")
+						("gain,g", po::value<int>(&gain)->required(),
+								"Gain in tenths of DB: 0(auto), 9, 125, 207, 328, 402, 496")
 						("low_pass,p", po::value<int>(&low_pass)->default_value(-1),
 											"low pass filter in (Hz) to reduce the bandwidth")
 						("chunk_size,c", po::value<int>(&chunk_size)->default_value(262144),
@@ -113,6 +116,7 @@ int main(int argc, char** argv){
 	std::cout << std::endl;
 	std::cout << "\t - Frequency: " << frequency << std::endl;
 	std::cout << "\t - SamplingRate: " << sampling_rate << std::endl;
+	std::cout << "\t - Gain: " << gain << std::endl;
 	std::cout << "\t - LowPass: " << low_pass << std::endl;
 	std::cout << "\t - ChunkSize: " << chunk_size << std::endl;
 	std::cout << "\t - OverlapSize: " << overlap_size << std::endl;
@@ -183,6 +187,7 @@ int main(int argc, char** argv){
 		Electrosense::ScanningParametersPtr config = new Electrosense::ScanningParameters();
 		config->frequency = frequency;
 		config->samplingRate = sampling_rate;
+		config->gain = gain;
 		config->chunkSize = chunk_size;
 		config->overlapSize = overlap_size;
 		config->duration = duration;

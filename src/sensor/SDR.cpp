@@ -11,7 +11,7 @@ SDR::SDR() {
 
 }
 
-void SDR::initialize(long frequency, long samplingRate, long chunkSize, long overlapSize, long duration, long downSampling)
+void SDR::initialize(long frequency, long samplingRate, int gain, long chunkSize, long overlapSize, long duration, long downSampling)
 {
 	mFrequency = frequency;
 	mSamplingRate = samplingRate;
@@ -19,6 +19,7 @@ void SDR::initialize(long frequency, long samplingRate, long chunkSize, long ove
 	mOverlapSize = overlapSize;
 	mDuration = duration;
 	mDownSampling = downSampling;
+	mGain = gain;
 
 	int device_index=0;
 	int n_rtlsdr=rtlsdr_get_device_count();
@@ -74,10 +75,12 @@ void SDR::initialize(long frequency, long samplingRate, long chunkSize, long ove
 	if(r < 0) {
 		std::cerr << "WARNING: Failed to enable manual gain mode" << std::endl;
 	}
-	r = rtlsdr_set_tuner_gain(mDevice, 10*10);
+	r = rtlsdr_set_tuner_gain(mDevice, mGain);
 	if(r < 0) {
 		std::cerr << "WARNING: Failed to set manual tuner gain" << std::endl;
 	}
+	else
+		std::cout << "Gain set to " << mGain/10 << std::endl;
 
 	// Reset the buffer
 	if (rtlsdr_reset_buffer(mDevice)<0) {
