@@ -89,6 +89,7 @@ void Sender::run ()
 			mSpectrumManager->push(eSegment);
 
 			// free memory
+			free(compress_buf);
 			segment->getSamples().clear();
 			delete(segment);
 		}
