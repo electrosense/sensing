@@ -1,7 +1,7 @@
 sensorIQ
 =
 
-*sensorIQ* is a piece of software that tipically it runs in RaspberryPi boards and it commands the RF receiver (rtl-sdr device). *sensorIQ* waits for the controller to know the scanning configuration for a specific campaign and then, send the spectrum information to the collector.
+*sensorIQ* is a piece of software that typically runs in RaspberryPi boards and it commands the RF receiver (rtl-sdr device). *sensorIQ* waits for the controller to know the scanning configuration for a specific campaign and then, send the spectrum information to the collector.
 
 
 Usage
