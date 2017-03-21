@@ -1,8 +1,7 @@
 Sensing
 =
 
-*sensing* is the open source implementation part of the proposals done by R. Calvo-Palomino, D. Giustiniano, V. Lenders and A. Fakhreddine in **"Crowdsourcing Spectrum Data Decoding"** [[INFOCOM 2016]]
-
+*sensing* is the open source implementation part of the paper by R. Calvo-Palomino, D. Giustiniano, V. Lenders and A. Fakhreddine, **"Crowdsourcing Spectrum Data Decoding"** [[INFOCOM 2017]]
 
 Software
 =
